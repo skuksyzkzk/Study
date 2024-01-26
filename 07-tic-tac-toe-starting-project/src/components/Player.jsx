@@ -1,5 +1,5 @@
 import { useState } from "react"
-export default function Player({ name, symbol , isActive}) {
+export default function Player({ name, symbol , isActive,onChangePlayer}) {
     const [userName,setUserName] = useState(name);
     const [isEditing, setIsEditing] = useState(false);
     // false라는 것은 Edit 할 마음이없다는 것으로 span을 보여준다 true일 경우에는 input을 띄운다
@@ -10,6 +10,7 @@ export default function Player({ name, symbol , isActive}) {
 
     function handleEditing() {
         setIsEditing((editing) => !editing);
+        onChangePlayer(symbol,userName);
     }
 
     function handleChange(event) {
