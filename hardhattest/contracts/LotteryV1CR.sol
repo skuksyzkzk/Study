@@ -1,5 +1,5 @@
 //SPDX-License-Identifier : MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.15;
 /*
     <Commit & Reveal>
     1) 참여자는 commit 기간 동안 secret 값을 생성 후 이를 해시하여 commit 한다.
@@ -17,7 +17,7 @@ pragma solidity ^0.8.19;
     생성자:  첫 회차의 commit, reveal 기간을 정함
 
     함수
-    enter()  
+    enter(bytes32 commitment)  
     : 참여자가 외부에서 secret값을 생성하여 해시한후 커밋값을 생성해서 그 값으로 진입한다
     : 진입할때는 기간이 커밋기간인지 0.1ETH이상인지 확인해준다
     : 통과할경우에 Commitments에 커밋값을 추가해준다 
@@ -38,5 +38,69 @@ pragma solidity ^0.8.19;
     : 그 다음 회차의 커밋기간과 리빌기간을 설정 
  */
 contract LotteryV1CR{
+    uint256 public commitClose;
+    uint256 public revealClose;
+    uint256 public constant DURATION = 4;
 
+    uint256 public lottryId;
+    address[] public players;
+    address public winner;
+    bytes32 seed;
+    mapping(address => bytes32) public commitments;
+    mapping(uint256 => address) public lotteryHistory;
+
+    constructor() {
+        commitClose = block.number + DURATION;
+        revealClose = commitClose +DURATION;  
+    }
+
+    function enter(bytes32 commitment) public payable  {
+        require(msg.value>=0.1 ether,"You should put more 0.1 ETH");
+        require(block.number < commitClose,"Not a Commit time");
+
+        commitments[msg.sender] = commitment;
+    }
+
+    function createCommintment(uint256 secret) public view returns(bytes32){
+        return keccak256(abi.encodePacked(msg.sender,secret));
+    }
+
+    function reveal(uint256 secret) public{
+        require(block.number >= commitClose,"commit duration is not closed yet");
+        require(block.number < revealClose,"reveal duration is already closed");
+
+        bytes32 commit = createCommintment(secret);
+        require(commit == commitments[msg.sender],"commit not maches (invaild user)");
+
+        seed = keccak256(abi.encodePacked(seed,secret));
+        players.push(msg.sender);
+        
+    }
+
+    function pickWinner() public{
+        require(block.number >=revealClose,"Not yet to pick winner");
+        require(winner==address(0),"winner is already set");
+
+        winner = players[uint256(seed) % players.length];
+
+        lotteryHistory[lottryId] = winner;
+        lottryId++;
+    }
+
+    function withdrawPrize() public {
+        require(msg.sender == winner,"only winner can withdraw prize");
+
+        (bool success,) = payable(winner).call{value: address(this).balance}("");
+        require(success,"Failed to transfer eth");
+
+        delete winner;
+        for(uint256 i =0;i < players.length;i++){
+            delete commitments[players[i]];
+        }
+        delete players;
+        delete seed;
+
+        commitClose = block.number + DURATION;
+        revealClose = commitClose + DURATION;
+    }
 }
