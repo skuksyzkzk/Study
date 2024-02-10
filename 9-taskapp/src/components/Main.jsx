@@ -5,7 +5,17 @@ export default function Main() {
     const [isCreate, setIsCreate] = useState(false);
     const [projects,setProjects] = useState([]);
     
+    function addProjects(title,description,date) {
+        setProjects(prev => [
+            ...prev,
+            { 
+                [title] : title,
+                [description] : description,
+                [date] : date
+            }
+        ]);
 
+    }
     function handleCreate() {
         setIsCreate(true);
     }
@@ -21,7 +31,7 @@ export default function Main() {
                 <button className="rounded-md bg-black text-gray-600 p-3 m-2" onClick={handleCreate}>Create new Project</button>
             </>
             }
-            {isCreate && <CreateNewProject handleNotCreate={handleNotCreate}/>}
+            {isCreate && <CreateNewProject handleNotCreate={handleNotCreate} projects={projects}/>}
         </div>
     )
 }

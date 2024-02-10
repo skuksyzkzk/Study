@@ -1,19 +1,20 @@
 import { useRef, useState } from "react";
 import Label from "./Label.";
 
-export default function CreateNewProject({handleNotCreate}) {
-    const [title,setTitle] = useState();
-    const [description,setDescription] = useState();
-    const [date,setDate] = useState();
+export default function CreateNewProject({handleNotCreate,projects}) {
+    // const [title,setTitle] = useState();
+    // const [description,setDescription] = useState();
+    // const [date,setDate] = useState();
 
     const titleRf= useRef(); 
     const descpritionRf = useRef();
     const dateRf = useRef();
     
     function handleSave(){
-        setTitle(titleRf.current.value);
-        setDescription(descpritionRf.current.value);
-        setDate(dateRf.current.value);
+        // setTitle(titleRf.current.value);
+        // setDescription(descpritionRf.current.value);
+        // setDate(dateRf.current.value);
+        
     }
     return (
         <>
